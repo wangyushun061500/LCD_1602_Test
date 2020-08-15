@@ -33,15 +33,16 @@ void main (void)
     EA = 1;
 	Delay1000ms();
 	SendString("STC15F2K60S2\r\nUart ON !\r\n");
-    // LCD1602_Init();
-    // LCD1602_Show(2,0,"Xiaomo_HAA");
-    // LCD1602_Show(0,11,"HAppy!");
+    LCD1602_Init();
+    Delay1000ms();
+    LCD1602_cmd(0x80);
+    LCD1602_Data('A');
     while (1)
     {
-        VO = 0;
-        Delay100us();
-        VO = 1;
-        Delay100us();
+        LCD1602_cmd(0x18);
+        // LCD1602_Show(2,0,"Xiaomo_HAA");
+        // LCD1602_Show(0,11,"HAppy!");
+        Delay1000ms();
     }
     
 }
@@ -86,14 +87,14 @@ u8 LCD_Data_Read (void)
 //写数据
 void LCD_Data_Write (u8 Data)
 {
-    D0 = (bit)(Data & 0x01);
+    D0 = (Data & 0x01);
     D1 = (bit)(Data & 0x02);
     D2 = (bit)(Data & 0x04);
     D3 = (bit)(Data & 0x08);
     D4 = (bit)(Data & 0x10);
-    D5 = (bit)(Data & 0x12);
-    D6 = (bit)(Data & 0x14);
-    D7 = (bit)(Data & 0x18);
+    D5 = (bit)(Data & 0x20);
+    D6 = (bit)(Data & 0x40);
+    D7 = (bit)(Data & 0x80);
 }
 
 //等待操作
