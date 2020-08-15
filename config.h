@@ -27,4 +27,17 @@ typedef 	unsigned long	u32;
 #define LEDA P01
 #define LEDK P00
 
+// 声明串口传输设置
+
+#define FOSC 24000000L		//系统频率
+#define BAUD 115200 		//波特率
+#define NONE_PARITY     0       //无校验
+#define ODD_PARITY      1       //奇校验
+#define EVEN_PARITY     2       //偶校验
+#define MARK_PARITY     3       //标记校验
+#define SPACE_PARITY    4       //空白校验
+#define PARITYBIT NONE_PARITY   //定义校验位
+#define S1_S0 0x40              //P_SW1.6
+#define S1_S1 0x80              //P_SW1.7
+
 #endif

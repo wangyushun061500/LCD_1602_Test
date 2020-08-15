@@ -2,15 +2,12 @@ Build target 'Target 1'
 compiling mian.c...
 linking...
 *** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
-    SEGMENT: ?PR?LCD_DATA_READ?MIAN
+    SEGMENT: ?PR?LCD1602_INIT?MIAN
 
 *** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
-    SEGMENT: ?PR?_WRITE_CMD?MIAN
+    SEGMENT: ?PR?_LCD1602_SHOW?MIAN
 
-*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
-    SEGMENT: ?PR?_WRITE_DAT?MIAN
-
-Program Size: data=9.0 xdata=0 code=170
+Program Size: data=15.1 xdata=0 code=468
 creating hex file from ".\Objects\Demo"...
-".\Objects\Demo" - 0 Error(s), 3 Warning(s).
+".\Objects\Demo" - 0 Error(s), 2 Warning(s).
 Build Time Elapsed:  00:00:01
