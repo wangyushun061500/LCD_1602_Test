@@ -1,4 +1,4 @@
-C51 COMPILER V9.59.0.0   MIAN                                                              08/15/2020 20:43:21 PAGE 1   
+C51 COMPILER V9.59.0.0   MIAN                                                              08/15/2020 21:06:33 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE MIAN
@@ -10,14 +10,35 @@ line level    source
 
    1          #include "config.h"
    2          
-   3          void main (void)
-   4          {
-   5   1      
-   6   1      }
+   3          //函数提前声明
+   4          void init (void);
+   5          
+   6          void main (void)
+   7          {
+   8   1          init();
+   9   1          while (1)
+  10   1          {
+  11   2              
+  12   2          }
+  13   1          
+  14   1      }
+  15          
+  16          //初始化函数
+  17          void init (void)
+  18          {
+  19   1          P0M0 = 0x03;
+  20   1          P0M1 = 0x00;
+  21   1          P1M0 = 0xe0;
+  22   1          P1M1 = 0x00;
+  23   1          VSS = 1;
+  24   1          GND = 0;
+  25   1          LEDA = 1;
+  26   1          LEDK = 0;
+  27   1      }
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =      1    ----
+   CODE SIZE        =     25    ----
    CONSTANT SIZE    =   ----    ----
    XDATA SIZE       =   ----    ----
    PDATA SIZE       =   ----    ----
