@@ -1,4 +1,4 @@
-C51 COMPILER V9.59.0.0   MIAN                                                              08/15/2020 22:39:34 PAGE 1   
+C51 COMPILER V9.59.0.0   MIAN                                                              08/16/2020 11:59:17 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE MIAN
@@ -11,272 +11,291 @@ line level    source
    1          #include "config.h"
    2          
    3          
-   4          //å‡½æ•°æå‰å£°æ˜
+   4          //º¯ÊıÌáÇ°ÉùÃ÷
    5          void init (void);
-   6          void Delay100us();
-   7          u8 LCD_Data_Read (void);
-   8          void LCD_Data_Write (u8 Data);
-   9          void LCD1602_wait();
-  10          void LCD1602_cmd(u8 cmd);
-  11          void LCD1602_Data(u8 dat);
-  12          void LCD1602_Init();
-  13          void LCD1602_SetRAM(u8 x,u8 y);
-  14          void LCD1602_Show(u8 x,u8 y,u8 *str);
-  15          void uart_init();
-  16          void SendData(u8 dat);
-  17          void SendString(char *s);
-  18          void Delay1000ms();
+   6          u8 LCD_Data_Read (void);
+   7          void Delay1us(u16 time);
+   8          void Delay1ms(u16 time);
+   9          void LCD_Data_Write (u8 Data);
+  10          void LCD1602_wait();
+  11          void LCD1602_cmd(u8 cmd);
+  12          void LCD1602_Data(u8 dat);
+  13          void LCD1602_Init();
+  14          void LCD1602_SetRAM(u8 x,u8 y);
+  15          void LCD1602_Show(u8 x,u8 y,u8 *str);
+  16          void uart_init();
+  17          void SendData(u8 dat);
+  18          void SendString(char *s);
   19          
-  20          //å˜é‡å£°æ˜
-  21          bit busy;
+  20          //±äÁ¿ÉùÃ÷
+  21          bit busy,init_Done;
   22          
   23          
   24          void main (void)
   25          {
   26   1          init();
   27   1          uart_init();
-  28   1        T2L = (65536 - (FOSC/4/BAUD));   //è®¾ç½®æ³¢ç‰¹ç‡é‡è£…å€¼
+  28   1        T2L = (65536 - (FOSC/4/BAUD));   //ÉèÖÃ²¨ÌØÂÊÖØ×°Öµ
   29   1          T2H = (65536 - (FOSC/4/BAUD))>>8;
-  30   1          AUXR = 0x14;                //T2ä¸º1Tæ¨¡å¼, å¹¶å¯åŠ¨å®šæ—¶å™¨2
-  31   1          AUXR |= 0x01;               //é€‰æ‹©å®šæ—¶å™¨2ä¸ºä¸²å£1çš„æ³¢ç‰¹ç‡å‘ç”Ÿå™¨
-  32   1          ES = 1;                     //ä½¿èƒ½ä¸²å£1ä¸­æ–­
+  30   1          AUXR = 0x14;                                //T2Îª1TÄ£Ê½, ²¢Æô¶¯¶¨Ê±Æ÷2
+  31   1          AUXR |= 0x01;                               //Ñ¡Ôñ¶¨Ê±Æ÷2Îª´®¿Ú1µÄ²¨ÌØÂÊ·¢ÉúÆ÷
+  32   1          ES = 1;                                           //Ê¹ÄÜ´®¿Ú1ÖĞ¶Ï
   33   1          EA = 1;
-  34   1        Delay1000ms();
-  35   1        SendString("STC15F2K60S2\r\nUart ON !\r\n");
-  36   1          LCD1602_Init();
-  37   1          Delay1000ms();
-  38   1          LCD1602_cmd(0x80);
-  39   1          LCD1602_Data('A');
-  40   1          while (1)
-  41   1          {
-  42   2              LCD1602_cmd(0x18);
-  43   2              // LCD1602_Show(2,0,"Xiaomo_HAA");
-  44   2              // LCD1602_Show(0,11,"HAppy!");
-  45   2              Delay1000ms();
-  46   2          }
-  47   1          
-  48   1      }
-  49          
-  50          //åˆå§‹åŒ–å‡½æ•°
-  51          void init (void)
-  52          {
-  53   1          P0M0 = 0x03;
-  54   1          P0M1 = 0x00;
-C51 COMPILER V9.59.0.0   MIAN                                                              08/15/2020 22:39:34 PAGE 2   
+  34   1          init_Done = 0;
+  35   1          Delay1ms(500);
+  36   1        SendString("STC15F2K60S2\r\nUART Done!\r\n");
+  37   1          LCD1602_Init();
+  38   1          Delay1ms(500);
+  39   1          init_Done = 1;
+  40   1          SendString("LCDReSet Done!\r\n");
+  41   1          while (1)
+  42   1          {
+  43   2              // LCD1602_SetRAM(0,0);
+  44   2              // LCD1602_Data(0x41);
+  45   2              // SendString("A-->Yes!\r\n");
+  46   2              // Delay1ms(500);
+  47   2              LCD1602_Show(0,0,"WangYushun");
+  48   2              Delay1ms(1000);
+  49   2              SendString("Íê³ÉÒ»´ÎÊı¾İĞ´Èë\r\n");
+  50   2              Delay1ms(10);
+  51   2              SendString("Ò»ÃëÑÓÊ±\r\n");
+  52   2          }
+  53   1      }
+  54          
+C51 COMPILER V9.59.0.0   MIAN                                                              08/16/2020 11:59:17 PAGE 2   
 
-  55   1          P1M0 = 0xe0;
-  56   1          P1M1 = 0x00;
-  57   1          VSS = 1;
-  58   1          GND = 0;
-  59   1          LEDA = 1;
-  60   1          LEDK = 0;
-  61   1      }
-  62          
-  63          //å»¶æ—¶å‡½æ•°100us
-  64          void Delay100us()   //@24.000MHz
-  65          {
-  66   1        unsigned char i, j;
-  67   1      
-  68   1        i = 3;
-  69   1        j = 82;
-  70   1        do
-  71   1        {
-  72   2          while (--j);
-  73   2        } while (--i);
-  74   1      }
-  75          
-  76          //è¯»æ•°æ®
-  77          u8 LCD_Data_Read (void)
-  78          {
-  79   1           u8 Data;
-  80   1           Data = (P0 >> 2) | (P1 << 6);
-  81   1           Data = (Data << 4) | (Data >> 4);
-  82   1           Data = ((Data >> 2) & 0x33) | ((Data << 2) & 0xcc);
-  83   1           Data = ((Data >> 1) & 0x55) | ((Data << 1) & 0xaa);
-  84   1           return Data;
-  85   1      }
-  86          
-  87          //å†™æ•°æ®
-  88          void LCD_Data_Write (u8 Data)
-  89          {
-  90   1          D0 = (Data & 0x01);
-  91   1          D1 = (bit)(Data & 0x02);
-  92   1          D2 = (bit)(Data & 0x04);
-  93   1          D3 = (bit)(Data & 0x08);
-  94   1          D4 = (bit)(Data & 0x10);
-  95   1          D5 = (bit)(Data & 0x20);
-  96   1          D6 = (bit)(Data & 0x40);
-  97   1          D7 = (bit)(Data & 0x80);
-  98   1      }
-  99          
- 100          //ç­‰å¾…æ“ä½œ
- 101          void LCD1602_wait()
- 102          {
- 103   1          u8 sta;
- 104   1          LCD_Data_Write(0xff);
- 105   1          RS = 0;
- 106   1          RW = 1;
- 107   1       
- 108   1          do{
- 109   2              CE = 1;
- 110   2              sta = LCD_Data_Read();    //è¯»å–çŠ¶æ€å­—
- 111   2              CE = 0;      
- 112   2          }while(sta & 0x80);      //bit7ç­‰äº1è¡¨ç¤ºæ¶²æ™¶æ­£å¿™ï¼Œé‡å¤æ£€æµ‹ç›´åˆ°å…¶ä¸º0ä¸ºæ­¢
- 113   1      }
- 114          
- 115          
- 116          //å†™å‘½ä»¤æ“ä½œ
-C51 COMPILER V9.59.0.0   MIAN                                                              08/15/2020 22:39:34 PAGE 3   
+  55          //³õÊ¼»¯º¯Êı
+  56          void init (void)
+  57          {
+  58   1          P0M0 = 0x03;
+  59   1          P0M1 = 0x00;
+  60   1          P1M0 = 0xe0;
+  61   1          P1M1 = 0x00;
+  62   1          VCC = 1;
+  63   1          GND = 0;
+  64   1          LEDA = 1;
+  65   1          LEDK = 0;
+  66   1          VO = 0;
+  67   1      }
+  68          
+  69          //1usÑÓÊ±º¯Êı
+  70          void Delay1us(u16 time)   //@24.000MHz
+  71          {
+  72   1        unsigned char i;
+  73   1          for (time; time > 0; time--)
+  74   1          {
+  75   2              _nop_();
+  76   2              _nop_();
+  77   2              i = 3;
+  78   2              while (--i);
+  79   2          }
+  80   1      }
+  81          
+  82          
+  83          //1msÑÓÊ±º¯Êı
+  84          void Delay1ms(u16 time)   //@24.000MHz
+  85          {
+  86   1        unsigned char i, j;
+  87   1          for (time; time > 0; time--)
+  88   1          {
+  89   2              i = 24;
+  90   2              j = 85;
+  91   2              do
+  92   2              {
+  93   3                  while (--j);
+  94   3              } while (--i);
+  95   2          }
+  96   1      }
+  97          
+  98          //¶ÁÊı¾İ
+  99          u8 LCD_Data_Read (void)
+ 100          {
+ 101   1           u8 Data;
+ 102   1           Data = (P0 >> 2) | (P1 << 6);
+ 103   1           Data = (Data << 4) | (Data >> 4);
+ 104   1           Data = ((Data >> 2) & 0x33) | ((Data << 2) & 0xcc);
+ 105   1           Data = ((Data >> 1) & 0x55) | ((Data << 1) & 0xaa);
+ 106   1           return Data;
+ 107   1      }
+ 108          
+ 109          //Ğ´Êı¾İ
+ 110          void LCD_Data_Write (u8 Data)
+ 111          {
+ 112   1          D0 = (bit)(Data & 0x01);
+ 113   1          D1 = (bit)(Data & 0x02);
+ 114   1          D2 = (bit)(Data & 0x04);
+ 115   1          D3 = (bit)(Data & 0x08);
+ 116   1          D4 = (bit)(Data & 0x10);
+C51 COMPILER V9.59.0.0   MIAN                                                              08/16/2020 11:59:17 PAGE 3   
 
- 117          void LCD1602_cmd(u8 cmd)
- 118          {
- 119   1          LCD1602_wait();
- 120   1        RS = 0;                   
- 121   1        RW = 0;
- 122   1        LCD_Data_Write(cmd);      
- 123   1        CE = 1;                 
- 124   1        CE = 0;
- 125   1      }
- 126           
- 127          //å†™æ•°æ®æ“ä½œ
- 128          void LCD1602_Data(u8 dat)
- 129          {
- 130   1          LCD1602_wait();
- 131   1        RS = 1;
- 132   1        RW = 0;
- 133   1        LCD_Data_Write(dat);
- 134   1        CE = 1;               
- 135   1        CE = 0;
- 136   1      }
+ 117   1          D5 = (bit)(Data & 0x20);
+ 118   1          D6 = (bit)(Data & 0x40);
+ 119   1          D7 = (bit)(Data & 0x80);
+ 120   1      }
+ 121          
+ 122          //µÈ´ı²Ù×÷
+ 123          void LCD1602_wait()
+ 124          {
+ 125   1          u8 sta;
+ 126   1          // LCD_Data_Write(0xff);
+ 127   1          RS = 0;
+ 128   1          RW = 1;
+ 129   1          CE = 1;
+ 130   1          Delay1ms(10);
+ 131   1          do{
+ 132   2              sta = LCD_Data_Read();    //¶ÁÈ¡×´Ì¬×Ö
+ 133   2              Delay1ms(1);
+ 134   2          }while(sta & 0x80);      //bit7µÈÓÚ1±íÊ¾Òº¾§ÕıÃ¦£¬ÖØ¸´¼ì²âÖ±µ½ÆäÎª0ÎªÖ¹
+ 135   1      }
+ 136          
  137          
- 138          //LCD1602åˆå§‹åŒ–
- 139          void LCD1602_Init()
+ 138          //Ğ´ÃüÁî²Ù×÷
+ 139          void LCD1602_cmd(u8 cmd)
  140          {
- 141   1        LCD1602_cmd(0x38);    //è®¾ç½®æ˜¾ç¤ºæ¨¡å¼
- 142   1        LCD1602_cmd(0x0e);    //å¼€æ˜¾ç¤ºä¸æ˜¾ç¤ºå…‰æ ‡ï¼Œå…‰æ ‡ä¸é—ªçƒ
- 143   1        LCD1602_cmd(0x06);    //å†™ä¸€ä¸ªæŒ‡é’ˆ+1
- 144   1        LCD1602_cmd(0x01);    //æ¸…å±
- 145   1      }
- 146          
- 147          //è®¾ç½®æ˜¾ç¤ºRAMèµ·å§‹åœ°å€ï¼ˆxï¼Œyå¯¹åº”å±å¹•ä¸Šå­—ç¬¦åæ ‡ï¼‰
- 148          void LCD1602_SetRAM(u8 x,u8 y)
- 149          {
- 150   1          u8 addr;
- 151   1          if(y == 0)
- 152   1              addr = 0x00 + x;
- 153   1          else
- 154   1              addr = 0x40 + x;
- 155   1          LCD1602_cmd(addr | 0x80);
- 156   1      }
- 157          
- 158          //æ˜¾ç¤ºå­—ç¬¦ä¸²
- 159          void LCD1602_Show(u8 x,u8 y,u8 *str)
- 160          {
- 161   1          LCD1602_SetRAM(x,y);
- 162   1          while(*str != '\0')
- 163   1          {
- 164   2              LCD1602_Data(*str++);
- 165   2          }
+ 141   1          if (init_Done == 1)
+ 142   1          {
+ 143   2              LCD1602_wait();
+ 144   2          }
+ 145   1        RS = 0;                   
+ 146   1        RW = 0;
+ 147   1        LCD_Data_Write(cmd);
+ 148   1          Delay1ms(10); 
+ 149   1        CE = 1;                 
+ 150   1        CE = 0;
+ 151   1      }
+ 152           
+ 153          //Ğ´Êı¾İ²Ù×÷
+ 154          void LCD1602_Data(u8 dat)
+ 155          {
+ 156   1          if (init_Done == 1)
+ 157   1          {
+ 158   2              LCD1602_wait();
+ 159   2          }
+ 160   1        RS = 1;
+ 161   1        RW = 0;
+ 162   1        LCD_Data_Write(dat);
+ 163   1          Delay1ms(10);
+ 164   1        CE = 1;               
+ 165   1        CE = 0;
  166   1      }
  167          
- 168          /*uartåˆå§‹åŒ–å‡½æ•°*/
- 169          void uart_init ()
+ 168          //LCD1602³õÊ¼»¯
+ 169          void LCD1602_Init()
  170          {
- 171   1        ACC = P_SW1;
- 172   1          ACC &= ~(S1_S0 | S1_S1);    //S1_S0=0 S1_S1=0
- 173   1          P_SW1 = ACC;                //(P3.0/RxD, P3.1/TxD)
- 174   1        #if (PARITYBIT == NONE_PARITY)
- 175   1          SCON = 0x50;                //8ä½å¯å˜æ³¢ç‰¹ç‡
- 176   1        #elif (PARITYBIT == ODD_PARITY) || (PARITYBIT == EVEN_PARITY) || (PARITYBIT == MARK_PARITY)
-                  SCON = 0xda;                //9ä½å¯å˜æ³¢ç‰¹ç‡,æ ¡éªŒä½åˆå§‹ä¸º1
-                #elif (PARITYBIT == SPACE_PARITY)
-C51 COMPILER V9.59.0.0   MIAN                                                              08/15/2020 22:39:34 PAGE 4   
+ 171   1        LCD1602_cmd(0x01);
+ 172   1          Delay1ms(10);
+ 173   1          LCD1602_cmd(0x03);
+ 174   1          Delay1ms(10);
+ 175   1          LCD1602_cmd(0x06);
+ 176   1          Delay1us(100);
+ 177   1          LCD1602_cmd(0x0e);
+ 178   1          Delay1us(100);
+C51 COMPILER V9.59.0.0   MIAN                                                              08/16/2020 11:59:17 PAGE 4   
 
-                  SCON = 0xd2;                //9ä½å¯å˜æ³¢ç‰¹ç‡,æ ¡éªŒä½åˆå§‹ä¸º0
-                #endif
- 181   1      }
- 182          
- 183          /*ä¸²å£æ•°æ®å‘é€*/
- 184          void SendData(u8 dat)
- 185          {
- 186   1          while (busy);               //ç­‰å¾…å‰é¢çš„æ•°æ®å‘é€å®Œæˆ
- 187   1          ACC = dat;                  //è·å–æ ¡éªŒä½P (PSW.0)
- 188   1          if (P)                      //æ ¹æ®Pæ¥è®¾ç½®æ ¡éªŒä½
- 189   1          {
- 190   2          #if (PARITYBIT == ODD_PARITY)
-                    TB8 = 0;                //è®¾ç½®æ ¡éªŒä½ä¸º0
-                  #elif (PARITYBIT == EVEN_PARITY)
-                    TB8 = 1;                //è®¾ç½®æ ¡éªŒä½ä¸º1
-                  #endif
- 195   2          }
- 196   1          else
- 197   1          {
- 198   2          #if (PARITYBIT == ODD_PARITY)
-                        TB8 = 1;                //è®¾ç½®æ ¡éªŒä½ä¸º1
-                  #elif (PARITYBIT == EVEN_PARITY)
-                        TB8 = 0;                //è®¾ç½®æ ¡éªŒä½ä¸º0
-                  #endif
+ 179   1          LCD1602_cmd(0x14);
+ 180   1          Delay1us(100);
+ 181   1          LCD1602_cmd(0x38);
+ 182   1          Delay1us(100);
+ 183   1      }
+ 184          
+ 185          //ÉèÖÃÏÔÊ¾RAMÆğÊ¼µØÖ·£¨x£¬y¶ÔÓ¦ÆÁÄ»ÉÏ×Ö·û×ø±ê£©
+ 186          void LCD1602_SetRAM(u8 x,u8 y)
+ 187          {
+ 188   1          u8 addr;
+ 189   1          if(y == 0)
+ 190   1              addr = 0x80 + x;
+ 191   1          else
+ 192   1              addr = 0xc0 + x;
+ 193   1          LCD1602_cmd(addr);
+ 194   1      }
+ 195          
+ 196          //ÏÔÊ¾×Ö·û´®
+ 197          void LCD1602_Show(u8 x,u8 y,u8 *str)
+ 198          {
+ 199   1          LCD1602_SetRAM(x,y);
+ 200   1          while(*str != '\0')
+ 201   1          {
+ 202   2              LCD1602_Data(*str++);
  203   2          }
- 204   1          busy = 1;
- 205   1          SBUF = ACC;                 //å†™æ•°æ®åˆ°UARTæ•°æ®å¯„å­˜å™¨
- 206   1      }
- 207          
- 208          /*å‘é€å­—ç¬¦ä¸²*/
- 209          void SendString(char *s)
- 210          {
- 211   1          while (*s)                  //æ£€æµ‹å­—ç¬¦ä¸²ç»“æŸæ ‡å¿—
- 212   1          {
- 213   2              SendData(*s++);         //å‘é€å½“å‰å­—ç¬¦
- 214   2          }
- 215   1      }
- 216          
- 217          //1000mså»¶æ—¶å‡½æ•°
- 218          void Delay1000ms()    //@24.000MHz
- 219          {
- 220   1        unsigned char i, j, k;
- 221   1      
- 222   1        _nop_();
- 223   1        _nop_();
- 224   1        i = 92;
- 225   1        j = 50;
- 226   1        k = 238;
- 227   1        do
- 228   1        {
- 229   2          do
- 230   2          {
- 231   3            while (--k);
- 232   3          } while (--j);
- 233   2        } while (--i);
- 234   1      }
- 235          
- 236          
- 237          /*uartä¸­æ–­æœåŠ¡ç¨‹åº*/
- 238          void Uart() interrupt 4
- 239          {
- 240   1          if (RI)
-C51 COMPILER V9.59.0.0   MIAN                                                              08/15/2020 22:39:34 PAGE 5   
+ 204   1      }
+ 205          
+ 206          /*uart³õÊ¼»¯º¯Êı*/
+ 207          void uart_init ()
+ 208          {
+ 209   1        ACC = P_SW1;
+ 210   1          ACC &= ~(S1_S0 | S1_S1);    //S1_S0=0 S1_S1=0
+ 211   1          P_SW1 = ACC;                //(P3.0/RxD, P3.1/TxD)
+ 212   1        #if (PARITYBIT == NONE_PARITY)
+ 213   1          SCON = 0x50;                //8Î»¿É±ä²¨ÌØÂÊ
+ 214   1        #elif (PARITYBIT == ODD_PARITY) || (PARITYBIT == EVEN_PARITY) || (PARITYBIT == MARK_PARITY)
+                  SCON = 0xda;                //9Î»¿É±ä²¨ÌØÂÊ,Ğ£ÑéÎ»³õÊ¼Îª1
+                #elif (PARITYBIT == SPACE_PARITY)
+                  SCON = 0xd2;                //9Î»¿É±ä²¨ÌØÂÊ,Ğ£ÑéÎ»³õÊ¼Îª0
+                #endif
+ 219   1      }
+ 220          
+ 221          /*´®¿ÚÊı¾İ·¢ËÍ*/
+ 222          void SendData(u8 dat)
+ 223          {
+ 224   1          while (busy);               //µÈ´ıÇ°ÃæµÄÊı¾İ·¢ËÍÍê³É
+ 225   1          ACC = dat;                  //»ñÈ¡Ğ£ÑéÎ»P (PSW.0)
+ 226   1          if (P)                      //¸ù¾İPÀ´ÉèÖÃĞ£ÑéÎ»
+ 227   1          {
+ 228   2          #if (PARITYBIT == ODD_PARITY)
+                    TB8 = 0;                //ÉèÖÃĞ£ÑéÎ»Îª0
+                  #elif (PARITYBIT == EVEN_PARITY)
+                    TB8 = 1;                //ÉèÖÃĞ£ÑéÎ»Îª1
+                  #endif
+ 233   2          }
+ 234   1          else
+ 235   1          {
+ 236   2          #if (PARITYBIT == ODD_PARITY)
+                        TB8 = 1;                //ÉèÖÃĞ£ÑéÎ»Îª1
+                  #elif (PARITYBIT == EVEN_PARITY)
+                        TB8 = 0;                //ÉèÖÃĞ£ÑéÎ»Îª0
+                  #endif
+C51 COMPILER V9.59.0.0   MIAN                                                              08/16/2020 11:59:17 PAGE 5   
 
- 241   1          {
- 242   2              RI = 0;                 //æ¸…é™¤RIä½
- 243   2              // P0 = SBUF;              //P0æ˜¾ç¤ºä¸²å£æ•°æ®
- 244   2              P54 = RB8;              //P2.2æ˜¾ç¤ºæ ¡éªŒä½
- 245   2          }
- 246   1          if (TI)
- 247   1          {
- 248   2              TI = 0;                 //æ¸…é™¤TIä½
- 249   2              busy = 0;               //æ¸…å¿™æ ‡å¿—
- 250   2          }
- 251   1      }
+ 241   2          }
+ 242   1          busy = 1;
+ 243   1          SBUF = ACC;                 //Ğ´Êı¾İµ½UARTÊı¾İ¼Ä´æÆ÷
+ 244   1      }
+ 245          
+ 246          /*·¢ËÍ×Ö·û´®*/
+ 247          void SendString(char *s)
+ 248          {
+ 249   1          while (*s)                  //¼ì²â×Ö·û´®½áÊø±êÖ¾
+ 250   1          {
+ 251   2              SendData(*s++);         //·¢ËÍµ±Ç°×Ö·û
+ 252   2          }
+ 253   1      }
+ 254          
+ 255          
+ 256          /*uartÖĞ¶Ï·şÎñ³ÌĞò*/
+ 257          void Uart() interrupt 4
+ 258          {
+ 259   1          if (RI)
+ 260   1          {
+ 261   2              RI = 0;                 //Çå³ıRIÎ»
+ 262   2              // P0 = SBUF;              //P0ÏÔÊ¾´®¿ÚÊı¾İ
+ 263   2              P54 = RB8;              //P2.2ÏÔÊ¾Ğ£ÑéÎ»
+ 264   2          }
+ 265   1          if (TI)
+ 266   1          {
+ 267   2              TI = 0;                 //Çå³ıTIÎ»
+ 268   2              busy = 0;               //ÇåÃ¦±êÖ¾
+ 269   2          }
+ 270   1      }
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    404    ----
-   CONSTANT SIZE    =     26    ----
+   CODE SIZE        =    517    ----
+   CONSTANT SIZE    =     84    ----
    XDATA SIZE       =   ----    ----
    PDATA SIZE       =   ----    ----
    DATA SIZE        =   ----       6
    IDATA SIZE       =   ----    ----
-   BIT SIZE         =      1    ----
+   BIT SIZE         =      2    ----
 END OF MODULE INFORMATION.
 
 

@@ -1,10 +1,11 @@
 #include "config.h"
 
 
-//å‡½æ•°æå‰å£°æ˜
+//º¯ÊıÌáÇ°ÉùÃ÷
 void init (void);
-void Delay100us();
 u8 LCD_Data_Read (void);
+void Delay1us(u16 time);
+void Delay1ms(u16 time);
 void LCD_Data_Write (u8 Data);
 void LCD1602_wait();
 void LCD1602_cmd(u8 cmd);
@@ -15,65 +16,86 @@ void LCD1602_Show(u8 x,u8 y,u8 *str);
 void uart_init();
 void SendData(u8 dat);
 void SendString(char *s);
-void Delay1000ms();
 
-//å˜é‡å£°æ˜
-bit busy;
+//±äÁ¿ÉùÃ÷
+bit busy,init_Done;
 
 
 void main (void)
 {
     init();
     uart_init();
-	T2L = (65536 - (FOSC/4/BAUD));   //è®¾ç½®æ³¢ç‰¹ç‡é‡è£…å€¼
+	T2L = (65536 - (FOSC/4/BAUD));   //ÉèÖÃ²¨ÌØÂÊÖØ×°Öµ
     T2H = (65536 - (FOSC/4/BAUD))>>8;
-    AUXR = 0x14;                //T2ä¸º1Tæ¨¡å¼, å¹¶å¯åŠ¨å®šæ—¶å™¨2
-    AUXR |= 0x01;               //é€‰æ‹©å®šæ—¶å™¨2ä¸ºä¸²å£1çš„æ³¢ç‰¹ç‡å‘ç”Ÿå™¨
-    ES = 1;                     //ä½¿èƒ½ä¸²å£1ä¸­æ–­
+    AUXR = 0x14;                                //T2Îª1TÄ£Ê½, ²¢Æô¶¯¶¨Ê±Æ÷2
+    AUXR |= 0x01;                               //Ñ¡Ôñ¶¨Ê±Æ÷2Îª´®¿Ú1µÄ²¨ÌØÂÊ·¢ÉúÆ÷
+    ES = 1;                                           //Ê¹ÄÜ´®¿Ú1ÖĞ¶Ï
     EA = 1;
-	Delay1000ms();
-	SendString("STC15F2K60S2\r\nUart ON !\r\n");
+    init_Done = 0;
+    Delay1ms(500);
+	SendString("STC15F2K60S2\r\nUART Done!\r\n");
     LCD1602_Init();
-    Delay1000ms();
-    LCD1602_cmd(0x80);
-    LCD1602_Data('A');
+    Delay1ms(500);
+    init_Done = 1;
+    SendString("LCDReSet Done!\r\n");
     while (1)
     {
-        LCD1602_cmd(0x18);
-        // LCD1602_Show(2,0,"Xiaomo_HAA");
-        // LCD1602_Show(0,11,"HAppy!");
-        Delay1000ms();
+        // LCD1602_SetRAM(0,0);
+        // LCD1602_Data(0x41);
+        // SendString("A-->Yes!\r\n");
+        // Delay1ms(500);
+        LCD1602_Show(0,0,"WangYushun");
+        Delay1ms(1000);
+        SendString("Íê³ÉÒ»´ÎÊı¾İĞ´Èë\r\n");
+        Delay1ms(10);
+        SendString("Ò»ÃëÑÓÊ±\r\n");
     }
-    
 }
 
-//åˆå§‹åŒ–å‡½æ•°
+//³õÊ¼»¯º¯Êı
 void init (void)
 {
     P0M0 = 0x03;
     P0M1 = 0x00;
     P1M0 = 0xe0;
     P1M1 = 0x00;
-    VSS = 1;
+    VCC = 1;
     GND = 0;
     LEDA = 1;
     LEDK = 0;
+    VO = 0;
 }
 
-//å»¶æ—¶å‡½æ•°100us
-void Delay100us()		//@24.000MHz
+//1usÑÓÊ±º¯Êı
+void Delay1us(u16 time)		//@24.000MHz
+{
+	unsigned char i;
+    for (time; time > 0; time--)
+    {
+        _nop_();
+        _nop_();
+        i = 3;
+        while (--i);
+    }
+}
+
+
+//1msÑÓÊ±º¯Êı
+void Delay1ms(u16 time)		//@24.000MHz
 {
 	unsigned char i, j;
-
-	i = 3;
-	j = 82;
-	do
-	{
-		while (--j);
-	} while (--i);
+    for (time; time > 0; time--)
+    {
+        i = 24;
+        j = 85;
+        do
+        {
+            while (--j);
+        } while (--i);
+    }
 }
 
-//è¯»æ•°æ®
+//¶ÁÊı¾İ
 u8 LCD_Data_Read (void)
 {
      u8 Data;
@@ -84,10 +106,10 @@ u8 LCD_Data_Read (void)
      return Data;
 }
 
-//å†™æ•°æ®
+//Ğ´Êı¾İ
 void LCD_Data_Write (u8 Data)
 {
-    D0 = (Data & 0x01);
+    D0 = (bit)(Data & 0x01);
     D1 = (bit)(Data & 0x02);
     D2 = (bit)(Data & 0x04);
     D3 = (bit)(Data & 0x08);
@@ -97,65 +119,81 @@ void LCD_Data_Write (u8 Data)
     D7 = (bit)(Data & 0x80);
 }
 
-//ç­‰å¾…æ“ä½œ
+//µÈ´ı²Ù×÷
 void LCD1602_wait()
 {
     u8 sta;
-    LCD_Data_Write(0xff);
+    // LCD_Data_Write(0xff);
     RS = 0;
     RW = 1;
- 
+    CE = 1;
+    Delay1ms(10);
     do{
-        CE = 1;
-        sta = LCD_Data_Read();    //è¯»å–çŠ¶æ€å­—
-        CE = 0;      
-    }while(sta & 0x80);      //bit7ç­‰äº1è¡¨ç¤ºæ¶²æ™¶æ­£å¿™ï¼Œé‡å¤æ£€æµ‹ç›´åˆ°å…¶ä¸º0ä¸ºæ­¢
+        sta = LCD_Data_Read();    //¶ÁÈ¡×´Ì¬×Ö
+        Delay1ms(1);
+    }while(sta & 0x80);      //bit7µÈÓÚ1±íÊ¾Òº¾§ÕıÃ¦£¬ÖØ¸´¼ì²âÖ±µ½ÆäÎª0ÎªÖ¹
 }
 
 
-//å†™å‘½ä»¤æ“ä½œ
+//Ğ´ÃüÁî²Ù×÷
 void LCD1602_cmd(u8 cmd)
 {
-    LCD1602_wait();
+    if (init_Done == 1)
+    {
+        LCD1602_wait();
+    }
 	RS = 0;		                
 	RW = 0;
-	LCD_Data_Write(cmd);			
+	LCD_Data_Write(cmd);
+    Delay1ms(10);	
 	CE = 1;		              
 	CE = 0;
 }
  
-//å†™æ•°æ®æ“ä½œ
+//Ğ´Êı¾İ²Ù×÷
 void LCD1602_Data(u8 dat)
 {
-    LCD1602_wait();
+    if (init_Done == 1)
+    {
+        LCD1602_wait();
+    }
 	RS = 1;
 	RW = 0;
 	LCD_Data_Write(dat);
+    Delay1ms(10);
 	CE = 1;			          
 	CE = 0;
 }
 
-//LCD1602åˆå§‹åŒ–
+//LCD1602³õÊ¼»¯
 void LCD1602_Init()
 {
-	LCD1602_cmd(0x38);		//è®¾ç½®æ˜¾ç¤ºæ¨¡å¼
-	LCD1602_cmd(0x0c);		//å¼€æ˜¾ç¤ºä¸æ˜¾ç¤ºå…‰æ ‡ï¼Œå…‰æ ‡ä¸é—ªçƒ
-	LCD1602_cmd(0x06);		//å†™ä¸€ä¸ªæŒ‡é’ˆ+1
-	LCD1602_cmd(0x01);		//æ¸…å±
+	LCD1602_cmd(0x01);
+    Delay1ms(10);
+    LCD1602_cmd(0x03);
+    Delay1ms(10);
+    LCD1602_cmd(0x06);
+    Delay1us(100);
+    LCD1602_cmd(0x0e);
+    Delay1us(100);
+    LCD1602_cmd(0x14);
+    Delay1us(100);
+    LCD1602_cmd(0x38);
+    Delay1us(100);
 }
 
-//è®¾ç½®æ˜¾ç¤ºRAMèµ·å§‹åœ°å€ï¼ˆxï¼Œyå¯¹åº”å±å¹•ä¸Šå­—ç¬¦åæ ‡ï¼‰
+//ÉèÖÃÏÔÊ¾RAMÆğÊ¼µØÖ·£¨x£¬y¶ÔÓ¦ÆÁÄ»ÉÏ×Ö·û×ø±ê£©
 void LCD1602_SetRAM(u8 x,u8 y)
 {
     u8 addr;
     if(y == 0)
-        addr = 0x00 + x;
+        addr = 0x80 + x;
     else
-        addr = 0x40 + x;
-    LCD1602_cmd(addr | 0x80);
+        addr = 0xc0 + x;
+    LCD1602_cmd(addr);
 }
 
-//æ˜¾ç¤ºå­—ç¬¦ä¸²
+//ÏÔÊ¾×Ö·û´®
 void LCD1602_Show(u8 x,u8 y,u8 *str)
 {
     LCD1602_SetRAM(x,y);
@@ -165,87 +203,68 @@ void LCD1602_Show(u8 x,u8 y,u8 *str)
     }
 }
 
-/*uartåˆå§‹åŒ–å‡½æ•°*/
+/*uart³õÊ¼»¯º¯Êı*/
 void uart_init ()
 {
 	ACC = P_SW1;
     ACC &= ~(S1_S0 | S1_S1);    //S1_S0=0 S1_S1=0
     P_SW1 = ACC;                //(P3.0/RxD, P3.1/TxD)
 	#if (PARITYBIT == NONE_PARITY)
-    SCON = 0x50;                //8ä½å¯å˜æ³¢ç‰¹ç‡
+    SCON = 0x50;                //8Î»¿É±ä²¨ÌØÂÊ
 	#elif (PARITYBIT == ODD_PARITY) || (PARITYBIT == EVEN_PARITY) || (PARITYBIT == MARK_PARITY)
-    SCON = 0xda;                //9ä½å¯å˜æ³¢ç‰¹ç‡,æ ¡éªŒä½åˆå§‹ä¸º1
+    SCON = 0xda;                //9Î»¿É±ä²¨ÌØÂÊ,Ğ£ÑéÎ»³õÊ¼Îª1
 	#elif (PARITYBIT == SPACE_PARITY)
-    SCON = 0xd2;                //9ä½å¯å˜æ³¢ç‰¹ç‡,æ ¡éªŒä½åˆå§‹ä¸º0
+    SCON = 0xd2;                //9Î»¿É±ä²¨ÌØÂÊ,Ğ£ÑéÎ»³õÊ¼Îª0
 	#endif
 }
 
-/*ä¸²å£æ•°æ®å‘é€*/
+/*´®¿ÚÊı¾İ·¢ËÍ*/
 void SendData(u8 dat)
 {
-    while (busy);               //ç­‰å¾…å‰é¢çš„æ•°æ®å‘é€å®Œæˆ
-    ACC = dat;                  //è·å–æ ¡éªŒä½P (PSW.0)
-    if (P)                      //æ ¹æ®Pæ¥è®¾ç½®æ ¡éªŒä½
+    while (busy);               //µÈ´ıÇ°ÃæµÄÊı¾İ·¢ËÍÍê³É
+    ACC = dat;                  //»ñÈ¡Ğ£ÑéÎ»P (PSW.0)
+    if (P)                      //¸ù¾İPÀ´ÉèÖÃĞ£ÑéÎ»
     {
 		#if (PARITYBIT == ODD_PARITY)
-			TB8 = 0;                //è®¾ç½®æ ¡éªŒä½ä¸º0
+			TB8 = 0;                //ÉèÖÃĞ£ÑéÎ»Îª0
 		#elif (PARITYBIT == EVEN_PARITY)
-			TB8 = 1;                //è®¾ç½®æ ¡éªŒä½ä¸º1
+			TB8 = 1;                //ÉèÖÃĞ£ÑéÎ»Îª1
 		#endif
     }
     else
     {
 		#if (PARITYBIT == ODD_PARITY)
-    	    TB8 = 1;                //è®¾ç½®æ ¡éªŒä½ä¸º1
+    	    TB8 = 1;                //ÉèÖÃĞ£ÑéÎ»Îª1
 		#elif (PARITYBIT == EVEN_PARITY)
-    	    TB8 = 0;                //è®¾ç½®æ ¡éªŒä½ä¸º0
+    	    TB8 = 0;                //ÉèÖÃĞ£ÑéÎ»Îª0
 		#endif
     }
     busy = 1;
-    SBUF = ACC;                 //å†™æ•°æ®åˆ°UARTæ•°æ®å¯„å­˜å™¨
+    SBUF = ACC;                 //Ğ´Êı¾İµ½UARTÊı¾İ¼Ä´æÆ÷
 }
 
-/*å‘é€å­—ç¬¦ä¸²*/
+/*·¢ËÍ×Ö·û´®*/
 void SendString(char *s)
 {
-    while (*s)                  //æ£€æµ‹å­—ç¬¦ä¸²ç»“æŸæ ‡å¿—
+    while (*s)                  //¼ì²â×Ö·û´®½áÊø±êÖ¾
     {
-        SendData(*s++);         //å‘é€å½“å‰å­—ç¬¦
+        SendData(*s++);         //·¢ËÍµ±Ç°×Ö·û
     }
 }
 
-//1000mså»¶æ—¶å‡½æ•°
-void Delay1000ms()		//@24.000MHz
-{
-	unsigned char i, j, k;
 
-	_nop_();
-	_nop_();
-	i = 92;
-	j = 50;
-	k = 238;
-	do
-	{
-		do
-		{
-			while (--k);
-		} while (--j);
-	} while (--i);
-}
-
-
-/*uartä¸­æ–­æœåŠ¡ç¨‹åº*/
+/*uartÖĞ¶Ï·şÎñ³ÌĞò*/
 void Uart() interrupt 4
 {
     if (RI)
     {
-        RI = 0;                 //æ¸…é™¤RIä½
-        // P0 = SBUF;              //P0æ˜¾ç¤ºä¸²å£æ•°æ®
-        P54 = RB8;              //P2.2æ˜¾ç¤ºæ ¡éªŒä½
+        RI = 0;                 //Çå³ıRIÎ»
+        // P0 = SBUF;              //P0ÏÔÊ¾´®¿ÚÊı¾İ
+        P54 = RB8;              //P2.2ÏÔÊ¾Ğ£ÑéÎ»
     }
     if (TI)
     {
-        TI = 0;                 //æ¸…é™¤TIä½
-        busy = 0;               //æ¸…å¿™æ ‡å¿—
+        TI = 0;                 //Çå³ıTIÎ»
+        busy = 0;               //ÇåÃ¦±êÖ¾
     }
 }

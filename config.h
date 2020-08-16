@@ -10,8 +10,8 @@ typedef 	unsigned int	u16;
 typedef 	unsigned long	u32;
 
 /*引脚定义**/
-#define VSS P17
-#define GND P16 
+#define GND P17
+#define VCC P16 
 #define VO P15
 #define RS P14
 #define RW P13
