@@ -7,13 +7,14 @@ u8 LCD_Data_Read (void);
 void Delay1us(u16 time);
 void Delay1ms(u16 time);
 void LCD_Data_Write (u8 Data);
-void LCD1602_wait();
+void LCD1602_wait(void);
 void LCD1602_cmd(u8 cmd);
 void LCD1602_Data(u8 dat);
-void LCD1602_Init();
+void LCD1602_Init(void);
+void Clear (void);
 void LCD1602_SetRAM(u8 x,u8 y);
 void LCD1602_Show(u8 x,u8 y,u8 *str);
-void uart_init();
+void uart_init(void);
 void SendData(u8 dat);
 void SendString(char *s);
 
@@ -25,11 +26,17 @@ void main (void)
 {
     init();
     uart_init();
-	T2L = (65536 - (FOSC/4/BAUD));   //设置波特率重装值
+	T2L = (65536 - (FOSC/4/BAUD));      //设置波特率重装值
     T2H = (65536 - (FOSC/4/BAUD))>>8;
-    AUXR = 0x14;                                //T2为1T模式, 并启动定时器2
-    AUXR |= 0x01;                               //选择定时器2为串口1的波特率发生器
-    ES = 1;                                           //使能串口1中断
+    AUXR = 0x14;                                    //T2为1T模式, 并启动定时器2
+    AUXR |= 0x01;                                   //选择定时器2为串口1的波特率发生器
+    ES = 1;                                               //使能串口1中断
+    AUXR |= 0x80;		                            //定时器时钟1T模式
+	TMOD &= 0xF0;		                         //设置定时器模式
+	TF0 = 0;		                                    //清除TF0标志
+	TR0 = 0;		                                    //定时器0开始计时
+    ET0 = 0;
+    PT0 = 0;                                            //高优先级
     EA = 1;
     init_Done = 0;
     Delay1ms(500);
@@ -39,16 +46,11 @@ void main (void)
     init_Done = 1;
     SendString("LCDReSet Done!\r\n");
     while (1)
-    {
-        // LCD1602_SetRAM(0,0);
-        // LCD1602_Data(0x41);
-        // SendString("A-->Yes!\r\n");
-        // Delay1ms(500);
-        LCD1602_Show(0,0,"WangYushun");
-        Delay1ms(1000);
-        SendString("完成一次数据写入\r\n");
-        Delay1ms(10);
-        SendString("一秒延时\r\n");
+    {   
+        LCD1602_Show(0,0,"I love to DIY ->");
+        LCD1602_Show(0,1,"Date:2002/8/16");
+        Delay1ms(10000);
+        Clear();
     }
 }
 
@@ -57,7 +59,7 @@ void init (void)
 {
     P0M0 = 0x03;
     P0M1 = 0x00;
-    P1M0 = 0xe0;
+    P1M0 = 0xc0;
     P1M1 = 0x00;
     VCC = 1;
     GND = 0;
@@ -127,7 +129,7 @@ void LCD1602_wait()
     RS = 0;
     RW = 1;
     CE = 1;
-    Delay1ms(10);
+    Delay1ms(100);
     do{
         sta = LCD_Data_Read();    //读取状态字
         Delay1ms(1);
@@ -145,7 +147,7 @@ void LCD1602_cmd(u8 cmd)
 	RS = 0;		                
 	RW = 0;
 	LCD_Data_Write(cmd);
-    Delay1ms(10);	
+    Delay1ms(1);	
 	CE = 1;		              
 	CE = 0;
 }
@@ -160,7 +162,7 @@ void LCD1602_Data(u8 dat)
 	RS = 1;
 	RW = 0;
 	LCD_Data_Write(dat);
-    Delay1ms(10);
+    Delay1ms(1);
 	CE = 1;			          
 	CE = 0;
 }
@@ -182,6 +184,10 @@ void LCD1602_Init()
     Delay1us(100);
 }
 
+void Clear (void)
+{
+    LCD1602_cmd(0x01);
+}
 //设置显示RAM起始地址（x，y对应屏幕上字符坐标）
 void LCD1602_SetRAM(u8 x,u8 y)
 {

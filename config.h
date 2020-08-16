@@ -9,6 +9,10 @@ typedef 	unsigned char	u8;
 typedef 	unsigned int	u16;
 typedef 	unsigned long	u32;
 
+#define MAIN_Fosc       24000000UL  //定义主时钟
+#define Timer0_Rate     25000       //中断频率
+#define Timer0_Reload   (65536UL -(MAIN_Fosc / Timer0_Rate))        //Timer 0 重装值
+
 /*引脚定义**/
 #define GND P17
 #define VCC P16 

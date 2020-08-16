@@ -1,4 +1,4 @@
-C51 COMPILER V9.59.0.0   MIAN                                                              08/16/2020 11:59:17 PAGE 1   
+C51 COMPILER V9.59.0.0   MIAN                                                              08/16/2020 13:08:40 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE MIAN
@@ -17,280 +17,286 @@ line level    source
    7          void Delay1us(u16 time);
    8          void Delay1ms(u16 time);
    9          void LCD_Data_Write (u8 Data);
-  10          void LCD1602_wait();
+  10          void LCD1602_wait(void);
   11          void LCD1602_cmd(u8 cmd);
   12          void LCD1602_Data(u8 dat);
-  13          void LCD1602_Init();
-  14          void LCD1602_SetRAM(u8 x,u8 y);
-  15          void LCD1602_Show(u8 x,u8 y,u8 *str);
-  16          void uart_init();
-  17          void SendData(u8 dat);
-  18          void SendString(char *s);
-  19          
-  20          //变量声明
-  21          bit busy,init_Done;
-  22          
+  13          void LCD1602_Init(void);
+  14          void Clear (void);
+  15          void LCD1602_SetRAM(u8 x,u8 y);
+  16          void LCD1602_Show(u8 x,u8 y,u8 *str);
+  17          void uart_init(void);
+  18          void SendData(u8 dat);
+  19          void SendString(char *s);
+  20          
+  21          //变量声明
+  22          bit busy,init_Done;
   23          
-  24          void main (void)
-  25          {
-  26   1          init();
-  27   1          uart_init();
-  28   1        T2L = (65536 - (FOSC/4/BAUD));   //设置波特率重装值
-  29   1          T2H = (65536 - (FOSC/4/BAUD))>>8;
-  30   1          AUXR = 0x14;                                //T2为1T模式, 并启动定时器2
-  31   1          AUXR |= 0x01;                               //选择定时器2为串口1的波特率发生器
-  32   1          ES = 1;                                           //使能串口1中断
-  33   1          EA = 1;
-  34   1          init_Done = 0;
-  35   1          Delay1ms(500);
-  36   1        SendString("STC15F2K60S2\r\nUART Done!\r\n");
-  37   1          LCD1602_Init();
-  38   1          Delay1ms(500);
-  39   1          init_Done = 1;
-  40   1          SendString("LCDReSet Done!\r\n");
-  41   1          while (1)
-  42   1          {
-  43   2              // LCD1602_SetRAM(0,0);
-  44   2              // LCD1602_Data(0x41);
-  45   2              // SendString("A-->Yes!\r\n");
-  46   2              // Delay1ms(500);
-  47   2              LCD1602_Show(0,0,"WangYushun");
-  48   2              Delay1ms(1000);
-  49   2              SendString("完成一次数据写入\r\n");
-  50   2              Delay1ms(10);
-  51   2              SendString("一秒延时\r\n");
-  52   2          }
-  53   1      }
-  54          
-C51 COMPILER V9.59.0.0   MIAN                                                              08/16/2020 11:59:17 PAGE 2   
+  24          
+  25          void main (void)
+  26          {
+  27   1          init();
+  28   1          uart_init();
+  29   1        T2L = (65536 - (FOSC/4/BAUD));      //设置波特率重装值
+  30   1          T2H = (65536 - (FOSC/4/BAUD))>>8;
+  31   1          AUXR = 0x14;                                    //T2为1T模式, 并启动定时器2
+  32   1          AUXR |= 0x01;                                   //选择定时器2为串口1的波特率发生器
+  33   1          ES = 1;                                               //使能串口1中断
+  34   1          AUXR |= 0x80;                               //定时器时钟1T模式
+  35   1        TMOD &= 0xF0;                            //设置定时器模式
+  36   1        TF0 = 0;                                        //清除TF0标志
+  37   1        TR0 = 0;                                        //定时器0开始计时
+  38   1          ET0 = 0;
+  39   1          PT0 = 0;                                            //高优先级
+  40   1          EA = 1;
+  41   1          init_Done = 0;
+  42   1          Delay1ms(500);
+  43   1        SendString("STC15F2K60S2\r\nUART Done!\r\n");
+  44   1          LCD1602_Init();
+  45   1          Delay1ms(500);
+  46   1          init_Done = 1;
+  47   1          SendString("LCDReSet Done!\r\n");
+  48   1          while (1)
+  49   1          {   
+  50   2              LCD1602_Show(0,0,"I love to DIY ->");
+  51   2              LCD1602_Show(0,1,"Date:2002/8/16");
+  52   2              Delay1ms(10000);
+  53   2              Clear();
+  54   2          }
+C51 COMPILER V9.59.0.0   MIAN                                                              08/16/2020 13:08:40 PAGE 2   
 
-  55          //初始化函数
-  56          void init (void)
-  57          {
-  58   1          P0M0 = 0x03;
-  59   1          P0M1 = 0x00;
-  60   1          P1M0 = 0xe0;
-  61   1          P1M1 = 0x00;
-  62   1          VCC = 1;
-  63   1          GND = 0;
-  64   1          LEDA = 1;
-  65   1          LEDK = 0;
-  66   1          VO = 0;
-  67   1      }
-  68          
-  69          //1us延时函数
-  70          void Delay1us(u16 time)   //@24.000MHz
-  71          {
-  72   1        unsigned char i;
-  73   1          for (time; time > 0; time--)
-  74   1          {
-  75   2              _nop_();
-  76   2              _nop_();
-  77   2              i = 3;
-  78   2              while (--i);
-  79   2          }
-  80   1      }
-  81          
-  82          
-  83          //1ms延时函数
-  84          void Delay1ms(u16 time)   //@24.000MHz
-  85          {
-  86   1        unsigned char i, j;
-  87   1          for (time; time > 0; time--)
-  88   1          {
-  89   2              i = 24;
-  90   2              j = 85;
-  91   2              do
-  92   2              {
-  93   3                  while (--j);
-  94   3              } while (--i);
-  95   2          }
-  96   1      }
-  97          
-  98          //读数据
-  99          u8 LCD_Data_Read (void)
- 100          {
- 101   1           u8 Data;
- 102   1           Data = (P0 >> 2) | (P1 << 6);
- 103   1           Data = (Data << 4) | (Data >> 4);
- 104   1           Data = ((Data >> 2) & 0x33) | ((Data << 2) & 0xcc);
- 105   1           Data = ((Data >> 1) & 0x55) | ((Data << 1) & 0xaa);
- 106   1           return Data;
- 107   1      }
- 108          
- 109          //写数据
- 110          void LCD_Data_Write (u8 Data)
- 111          {
- 112   1          D0 = (bit)(Data & 0x01);
- 113   1          D1 = (bit)(Data & 0x02);
- 114   1          D2 = (bit)(Data & 0x04);
- 115   1          D3 = (bit)(Data & 0x08);
- 116   1          D4 = (bit)(Data & 0x10);
-C51 COMPILER V9.59.0.0   MIAN                                                              08/16/2020 11:59:17 PAGE 3   
+  55   1      }
+  56          
+  57          //初始化函数
+  58          void init (void)
+  59          {
+  60   1          P0M0 = 0x03;
+  61   1          P0M1 = 0x00;
+  62   1          P1M0 = 0xc0;
+  63   1          P1M1 = 0x00;
+  64   1          VCC = 1;
+  65   1          GND = 0;
+  66   1          LEDA = 1;
+  67   1          LEDK = 0;
+  68   1          VO = 0;
+  69   1      }
+  70          
+  71          //1us延时函数
+  72          void Delay1us(u16 time)   //@24.000MHz
+  73          {
+  74   1        unsigned char i;
+  75   1          for (time; time > 0; time--)
+  76   1          {
+  77   2              _nop_();
+  78   2              _nop_();
+  79   2              i = 3;
+  80   2              while (--i);
+  81   2          }
+  82   1      }
+  83          
+  84          
+  85          //1ms延时函数
+  86          void Delay1ms(u16 time)   //@24.000MHz
+  87          {
+  88   1        unsigned char i, j;
+  89   1          for (time; time > 0; time--)
+  90   1          {
+  91   2              i = 24;
+  92   2              j = 85;
+  93   2              do
+  94   2              {
+  95   3                  while (--j);
+  96   3              } while (--i);
+  97   2          }
+  98   1      }
+  99          
+ 100          //读数据
+ 101          u8 LCD_Data_Read (void)
+ 102          {
+ 103   1           u8 Data;
+ 104   1           Data = (P0 >> 2) | (P1 << 6);
+ 105   1           Data = (Data << 4) | (Data >> 4);
+ 106   1           Data = ((Data >> 2) & 0x33) | ((Data << 2) & 0xcc);
+ 107   1           Data = ((Data >> 1) & 0x55) | ((Data << 1) & 0xaa);
+ 108   1           return Data;
+ 109   1      }
+ 110          
+ 111          //写数据
+ 112          void LCD_Data_Write (u8 Data)
+ 113          {
+ 114   1          D0 = (bit)(Data & 0x01);
+ 115   1          D1 = (bit)(Data & 0x02);
+ 116   1          D2 = (bit)(Data & 0x04);
+C51 COMPILER V9.59.0.0   MIAN                                                              08/16/2020 13:08:40 PAGE 3   
 
- 117   1          D5 = (bit)(Data & 0x20);
- 118   1          D6 = (bit)(Data & 0x40);
- 119   1          D7 = (bit)(Data & 0x80);
- 120   1      }
- 121          
- 122          //等待操作
- 123          void LCD1602_wait()
- 124          {
- 125   1          u8 sta;
- 126   1          // LCD_Data_Write(0xff);
- 127   1          RS = 0;
- 128   1          RW = 1;
- 129   1          CE = 1;
- 130   1          Delay1ms(10);
- 131   1          do{
- 132   2              sta = LCD_Data_Read();    //读取状态字
- 133   2              Delay1ms(1);
- 134   2          }while(sta & 0x80);      //bit7等于1表示液晶正忙，重复检测直到其为0为止
- 135   1      }
- 136          
- 137          
- 138          //写命令操作
- 139          void LCD1602_cmd(u8 cmd)
- 140          {
- 141   1          if (init_Done == 1)
- 142   1          {
- 143   2              LCD1602_wait();
- 144   2          }
- 145   1        RS = 0;                   
- 146   1        RW = 0;
- 147   1        LCD_Data_Write(cmd);
- 148   1          Delay1ms(10); 
- 149   1        CE = 1;                 
- 150   1        CE = 0;
- 151   1      }
- 152           
- 153          //写数据操作
- 154          void LCD1602_Data(u8 dat)
- 155          {
- 156   1          if (init_Done == 1)
- 157   1          {
- 158   2              LCD1602_wait();
- 159   2          }
- 160   1        RS = 1;
- 161   1        RW = 0;
- 162   1        LCD_Data_Write(dat);
- 163   1          Delay1ms(10);
- 164   1        CE = 1;               
- 165   1        CE = 0;
- 166   1      }
- 167          
- 168          //LCD1602初始化
- 169          void LCD1602_Init()
- 170          {
- 171   1        LCD1602_cmd(0x01);
- 172   1          Delay1ms(10);
- 173   1          LCD1602_cmd(0x03);
+ 117   1          D3 = (bit)(Data & 0x08);
+ 118   1          D4 = (bit)(Data & 0x10);
+ 119   1          D5 = (bit)(Data & 0x20);
+ 120   1          D6 = (bit)(Data & 0x40);
+ 121   1          D7 = (bit)(Data & 0x80);
+ 122   1      }
+ 123          
+ 124          //等待操作
+ 125          void LCD1602_wait()
+ 126          {
+ 127   1          u8 sta;
+ 128   1          // LCD_Data_Write(0xff);
+ 129   1          RS = 0;
+ 130   1          RW = 1;
+ 131   1          CE = 1;
+ 132   1          Delay1ms(100);
+ 133   1          do{
+ 134   2              sta = LCD_Data_Read();    //读取状态字
+ 135   2              Delay1ms(1);
+ 136   2          }while(sta & 0x80);      //bit7等于1表示液晶正忙，重复检测直到其为0为止
+ 137   1      }
+ 138          
+ 139          
+ 140          //写命令操作
+ 141          void LCD1602_cmd(u8 cmd)
+ 142          {
+ 143   1          if (init_Done == 1)
+ 144   1          {
+ 145   2              LCD1602_wait();
+ 146   2          }
+ 147   1        RS = 0;                   
+ 148   1        RW = 0;
+ 149   1        LCD_Data_Write(cmd);
+ 150   1          Delay1ms(1);  
+ 151   1        CE = 1;                 
+ 152   1        CE = 0;
+ 153   1      }
+ 154           
+ 155          //写数据操作
+ 156          void LCD1602_Data(u8 dat)
+ 157          {
+ 158   1          if (init_Done == 1)
+ 159   1          {
+ 160   2              LCD1602_wait();
+ 161   2          }
+ 162   1        RS = 1;
+ 163   1        RW = 0;
+ 164   1        LCD_Data_Write(dat);
+ 165   1          Delay1ms(1);
+ 166   1        CE = 1;               
+ 167   1        CE = 0;
+ 168   1      }
+ 169          
+ 170          //LCD1602初始化
+ 171          void LCD1602_Init()
+ 172          {
+ 173   1        LCD1602_cmd(0x01);
  174   1          Delay1ms(10);
- 175   1          LCD1602_cmd(0x06);
- 176   1          Delay1us(100);
- 177   1          LCD1602_cmd(0x0e);
+ 175   1          LCD1602_cmd(0x03);
+ 176   1          Delay1ms(10);
+ 177   1          LCD1602_cmd(0x06);
  178   1          Delay1us(100);
-C51 COMPILER V9.59.0.0   MIAN                                                              08/16/2020 11:59:17 PAGE 4   
+C51 COMPILER V9.59.0.0   MIAN                                                              08/16/2020 13:08:40 PAGE 4   
 
- 179   1          LCD1602_cmd(0x14);
+ 179   1          LCD1602_cmd(0x0e);
  180   1          Delay1us(100);
- 181   1          LCD1602_cmd(0x38);
+ 181   1          LCD1602_cmd(0x14);
  182   1          Delay1us(100);
- 183   1      }
- 184          
- 185          //设置显示RAM起始地址（x，y对应屏幕上字符坐标）
- 186          void LCD1602_SetRAM(u8 x,u8 y)
- 187          {
- 188   1          u8 addr;
- 189   1          if(y == 0)
- 190   1              addr = 0x80 + x;
- 191   1          else
- 192   1              addr = 0xc0 + x;
- 193   1          LCD1602_cmd(addr);
- 194   1      }
- 195          
- 196          //显示字符串
- 197          void LCD1602_Show(u8 x,u8 y,u8 *str)
- 198          {
- 199   1          LCD1602_SetRAM(x,y);
- 200   1          while(*str != '\0')
- 201   1          {
- 202   2              LCD1602_Data(*str++);
- 203   2          }
- 204   1      }
- 205          
- 206          /*uart初始化函数*/
- 207          void uart_init ()
- 208          {
- 209   1        ACC = P_SW1;
- 210   1          ACC &= ~(S1_S0 | S1_S1);    //S1_S0=0 S1_S1=0
- 211   1          P_SW1 = ACC;                //(P3.0/RxD, P3.1/TxD)
- 212   1        #if (PARITYBIT == NONE_PARITY)
- 213   1          SCON = 0x50;                //8位可变波特率
- 214   1        #elif (PARITYBIT == ODD_PARITY) || (PARITYBIT == EVEN_PARITY) || (PARITYBIT == MARK_PARITY)
+ 183   1          LCD1602_cmd(0x38);
+ 184   1          Delay1us(100);
+ 185   1      }
+ 186          
+ 187          void Clear (void)
+ 188          {
+ 189   1          LCD1602_cmd(0x01);
+ 190   1      }
+ 191          //设置显示RAM起始地址（x，y对应屏幕上字符坐标）
+ 192          void LCD1602_SetRAM(u8 x,u8 y)
+ 193          {
+ 194   1          u8 addr;
+ 195   1          if(y == 0)
+ 196   1              addr = 0x80 + x;
+ 197   1          else
+ 198   1              addr = 0xc0 + x;
+ 199   1          LCD1602_cmd(addr);
+ 200   1      }
+ 201          
+ 202          //显示字符串
+ 203          void LCD1602_Show(u8 x,u8 y,u8 *str)
+ 204          {
+ 205   1          LCD1602_SetRAM(x,y);
+ 206   1          while(*str != '\0')
+ 207   1          {
+ 208   2              LCD1602_Data(*str++);
+ 209   2          }
+ 210   1      }
+ 211          
+ 212          /*uart初始化函数*/
+ 213          void uart_init ()
+ 214          {
+ 215   1        ACC = P_SW1;
+ 216   1          ACC &= ~(S1_S0 | S1_S1);    //S1_S0=0 S1_S1=0
+ 217   1          P_SW1 = ACC;                //(P3.0/RxD, P3.1/TxD)
+ 218   1        #if (PARITYBIT == NONE_PARITY)
+ 219   1          SCON = 0x50;                //8位可变波特率
+ 220   1        #elif (PARITYBIT == ODD_PARITY) || (PARITYBIT == EVEN_PARITY) || (PARITYBIT == MARK_PARITY)
                   SCON = 0xda;                //9位可变波特率,校验位初始为1
                 #elif (PARITYBIT == SPACE_PARITY)
                   SCON = 0xd2;                //9位可变波特率,校验位初始为0
                 #endif
- 219   1      }
- 220          
- 221          /*串口数据发送*/
- 222          void SendData(u8 dat)
- 223          {
- 224   1          while (busy);               //等待前面的数据发送完成
- 225   1          ACC = dat;                  //获取校验位P (PSW.0)
- 226   1          if (P)                      //根据P来设置校验位
- 227   1          {
- 228   2          #if (PARITYBIT == ODD_PARITY)
+ 225   1      }
+ 226          
+ 227          /*串口数据发送*/
+ 228          void SendData(u8 dat)
+ 229          {
+ 230   1          while (busy);               //等待前面的数据发送完成
+ 231   1          ACC = dat;                  //获取校验位P (PSW.0)
+ 232   1          if (P)                      //根据P来设置校验位
+ 233   1          {
+ 234   2          #if (PARITYBIT == ODD_PARITY)
                     TB8 = 0;                //设置校验位为0
                   #elif (PARITYBIT == EVEN_PARITY)
                     TB8 = 1;                //设置校验位为1
                   #endif
- 233   2          }
- 234   1          else
- 235   1          {
- 236   2          #if (PARITYBIT == ODD_PARITY)
+ 239   2          }
+ 240   1          else
+C51 COMPILER V9.59.0.0   MIAN                                                              08/16/2020 13:08:40 PAGE 5   
+
+ 241   1          {
+ 242   2          #if (PARITYBIT == ODD_PARITY)
                         TB8 = 1;                //设置校验位为1
                   #elif (PARITYBIT == EVEN_PARITY)
                         TB8 = 0;                //设置校验位为0
                   #endif
-C51 COMPILER V9.59.0.0   MIAN                                                              08/16/2020 11:59:17 PAGE 5   
-
- 241   2          }
- 242   1          busy = 1;
- 243   1          SBUF = ACC;                 //写数据到UART数据寄存器
- 244   1      }
- 245          
- 246          /*发送字符串*/
- 247          void SendString(char *s)
- 248          {
- 249   1          while (*s)                  //检测字符串结束标志
- 250   1          {
- 251   2              SendData(*s++);         //发送当前字符
- 252   2          }
- 253   1      }
- 254          
- 255          
- 256          /*uart中断服务程序*/
- 257          void Uart() interrupt 4
- 258          {
- 259   1          if (RI)
- 260   1          {
- 261   2              RI = 0;                 //清除RI位
- 262   2              // P0 = SBUF;              //P0显示串口数据
- 263   2              P54 = RB8;              //P2.2显示校验位
- 264   2          }
- 265   1          if (TI)
+ 247   2          }
+ 248   1          busy = 1;
+ 249   1          SBUF = ACC;                 //写数据到UART数据寄存器
+ 250   1      }
+ 251          
+ 252          /*发送字符串*/
+ 253          void SendString(char *s)
+ 254          {
+ 255   1          while (*s)                  //检测字符串结束标志
+ 256   1          {
+ 257   2              SendData(*s++);         //发送当前字符
+ 258   2          }
+ 259   1      }
+ 260          
+ 261          
+ 262          /*uart中断服务程序*/
+ 263          void Uart() interrupt 4
+ 264          {
+ 265   1          if (RI)
  266   1          {
- 267   2              TI = 0;                 //清除TI位
- 268   2              busy = 0;               //清忙标志
- 269   2          }
- 270   1      }
+ 267   2              RI = 0;                 //清除RI位
+ 268   2              // P0 = SBUF;              //P0显示串口数据
+ 269   2              P54 = RB8;              //P2.2显示校验位
+ 270   2          }
+ 271   1          if (TI)
+ 272   1          {
+ 273   2              TI = 0;                 //清除TI位
+ 274   2              busy = 0;               //清忙标志
+ 275   2          }
+ 276   1      }
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    517    ----
-   CONSTANT SIZE    =     84    ----
+   CODE SIZE        =    539    ----
+   CONSTANT SIZE    =     76    ----
    XDATA SIZE       =   ----    ----
    PDATA SIZE       =   ----    ----
    DATA SIZE        =   ----       6
